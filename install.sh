@@ -46,7 +46,7 @@ DMG_URL=$(curl -fsSL "https://api.github.com/repos/$REPO/releases/latest" \
 echo "▸ Downloading $(basename "$DMG_URL")…"
 curl -fL --progress-bar "$DMG_URL" -o "$TEMP_DIR/StorageExplorer.dmg"
 
-echo "▸ Installing to $INSTALL_DIR…"
+echo "▸ Installing to ${INSTALL_DIR}…"
 MOUNT_POINT=$(hdiutil attach -nobrowse -readonly -noautoopen "$TEMP_DIR/StorageExplorer.dmg" \
     | awk -F'\t' '/\/Volumes\// { print $NF }')
 [ -d "$MOUNT_POINT/$APP_NAME.app" ] || fail "The DMG doesn't contain $APP_NAME.app."
