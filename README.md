@@ -10,7 +10,7 @@ No packages to install. No changes to your app code.
 [![Latest release](https://img.shields.io/github/v/release/Emin91/StorageExplorer?color=FF9500&label=release)](https://github.com/Emin91/StorageExplorer/releases/latest)
 ![macOS 15+](https://img.shields.io/badge/macOS-15%2B-000000?logo=apple&logoColor=white)
 ![Swift](https://img.shields.io/badge/SwiftUI-Swift%206-F05138?logo=swift&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
 [Install](#installation) · [Features](#features) · [How it works](#how-it-works) · [Roadmap](#roadmap)
 
@@ -20,9 +20,7 @@ No packages to install. No changes to your app code.
   <img src="docs/screenshot.png" width="900" alt="Storage Explorer next to iOS Simulator">
 </p>
 
-
 https://github.com/user-attachments/assets/f18fe01e-0353-4caf-b9aa-1643b4d0cf97
-
 
 ## Installation
 
@@ -137,4 +135,8 @@ install.sh    one-command installer
 
 ## License
 
-[MIT](LICENSE): free to use, modify and distribute.
+Storage Explorer is free and open source under the [Apache License 2.0](LICENSE).
+
+You're welcome to use, modify and share it, including in commercial projects. If you distribute it or a modified version, keep the [NOTICE](NOTICE) file with the original attribution and mark the files you changed.
+
+Copyright © 2026 Emin Zeynalov
