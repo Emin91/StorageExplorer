@@ -268,19 +268,18 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
     }
 
     private func collapsedFrame(nextTo simulatorFrame: CGRect) -> CGRect {
-        let deviceFrame = simulatorFrame.insetBy(dx: SimulatorMetrics.transparentInset, dy: SimulatorMetrics.transparentInset)
-        let width = deviceFrame.width
+        let width = simulatorFrame.width
         let height = layoutViewModel.headerHeight
         var frame = CGRect(
-            x: deviceFrame.minX,
-            y: deviceFrame.maxY + Layout.collapsedGap,
+            x: simulatorFrame.minX,
+            y: simulatorFrame.maxY + Layout.collapsedGap,
             width: width,
             height: height
         )
 
         if let visibleFrame = screen(containing: simulatorFrame)?.visibleFrame {
             if frame.maxY > visibleFrame.maxY {
-                frame.origin.y = deviceFrame.minY - Layout.collapsedGap - height
+                frame.origin.y = simulatorFrame.minY - Layout.collapsedGap - height
             }
             frame.origin.x = min(max(frame.minX, visibleFrame.minX), visibleFrame.maxX - width)
         }
@@ -336,7 +335,6 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
             height: min(max(size.height, sizeLimits.min.height), sizeLimits.max.height)
         )
     }
-
 
     func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
         layoutViewModel.isCollapsed ? panel.frame.size : clamped(frameSize)
