@@ -20,7 +20,9 @@ No packages to install. No changes to your app code.
   <img src="docs/screenshot.png" width="900" alt="Storage Explorer next to iOS Simulator">
 </p>
 
-https://github.com/user-attachments/assets/0350dc5f-e0d0-4c40-b0b9-c19216e7fd3e
+
+https://github.com/user-attachments/assets/f18fe01e-0353-4caf-b9aa-1643b4d0cf97
+
 
 ## Installation
 
