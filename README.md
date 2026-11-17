@@ -12,7 +12,7 @@ No packages to install. No changes to your app code.
 ![Swift](https://img.shields.io/badge/SwiftUI-Swift%206-F05138?logo=swift&logoColor=white)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
-[Install](#installation) · [Features](#features) · [How it works](#how-it-works) · [Roadmap](#roadmap)
+[Install](#installation) · [Features](#features) · [How it works](#how-it-works) · [Roadmap](#roadmap) · [Changelog](CHANGELOG.md)
 
 </div>
 
