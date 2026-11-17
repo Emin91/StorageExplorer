@@ -10,13 +10,17 @@ import Foundation
 
 @MainActor
 final class AppSettings: ObservableObject {
-    private enum Key {
+    enum Key {
         static let spacing = "settings.spacing"
         static let material = "settings.material"
         static let opacity = "settings.opacity"
         static let enabledPlugins = "settings.enabledPlugins"
         static let showsDockIcon = "settings.showsDockIcon"
         static let appSelectionMode = "settings.appSelectionMode"
+        static let metroPort = "settings.metroPort"
+        static let highlightsChanges = "settings.highlightsChanges"
+        static let highlightColor = "settings.highlightColor"
+        static let highlightDuration = "settings.highlightDuration"
     }
 
     enum Defaults {
@@ -26,9 +30,15 @@ final class AppSettings: ObservableObject {
         static let enabledPlugins: Set<StoragePlugin> = [.asyncStorage]
         static let showsDockIcon = true
         static let appSelectionMode: AppSelectionMode = .followRunningApp
+        static let metroPort = 8081
+        static let highlightsChanges = true
+        static let highlightColor: HighlightColor = .orange
+        static let highlightDuration: Double = 0.5
     }
 
     private let defaults: UserDefaults
+
+    let didResetToDefaults = PassthroughSubject<Void, Never>()
 
     @Published var spacing: Double {
         didSet { defaults.set(spacing, forKey: Key.spacing) }
@@ -54,6 +64,22 @@ final class AppSettings: ObservableObject {
         didSet { defaults.set(appSelectionMode.rawValue, forKey: Key.appSelectionMode) }
     }
 
+    @Published var metroPort: Int {
+        didSet { defaults.set(metroPort, forKey: Key.metroPort) }
+    }
+
+    @Published var highlightsChanges: Bool {
+        didSet { defaults.set(highlightsChanges, forKey: Key.highlightsChanges) }
+    }
+
+    @Published var highlightColor: HighlightColor {
+        didSet { defaults.set(highlightColor.rawValue, forKey: Key.highlightColor) }
+    }
+
+    @Published var highlightDuration: Double {
+        didSet { defaults.set(highlightDuration, forKey: Key.highlightDuration) }
+    }
+
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         spacing = defaults.object(forKey: Key.spacing) as? Double ?? Defaults.spacing
@@ -64,6 +90,11 @@ final class AppSettings: ObservableObject {
         showsDockIcon = defaults.object(forKey: Key.showsDockIcon) as? Bool ?? Defaults.showsDockIcon
         appSelectionMode = defaults.string(forKey: Key.appSelectionMode)
             .flatMap(AppSelectionMode.init(rawValue:)) ?? Defaults.appSelectionMode
+        metroPort = defaults.object(forKey: Key.metroPort) as? Int ?? Defaults.metroPort
+        highlightsChanges = defaults.object(forKey: Key.highlightsChanges) as? Bool ?? Defaults.highlightsChanges
+        highlightColor = defaults.string(forKey: Key.highlightColor)
+            .flatMap(HighlightColor.init(rawValue:)) ?? Defaults.highlightColor
+        highlightDuration = defaults.object(forKey: Key.highlightDuration) as? Double ?? Defaults.highlightDuration
     }
 
     func isEnabled(_ plugin: StoragePlugin) -> Bool {
@@ -85,5 +116,12 @@ final class AppSettings: ObservableObject {
         enabledPlugins = Defaults.enabledPlugins
         showsDockIcon = Defaults.showsDockIcon
         appSelectionMode = Defaults.appSelectionMode
+        metroPort = Defaults.metroPort
+        highlightsChanges = Defaults.highlightsChanges
+        highlightColor = Defaults.highlightColor
+        highlightDuration = Defaults.highlightDuration
+
+        StorageColumn.LayoutKey.all.forEach(defaults.removeObject(forKey:))
+        didResetToDefaults.send()
     }
 }

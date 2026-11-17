@@ -18,7 +18,7 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
 
         static let defaultHeightRatio: CGFloat = 0.6
         static let minHeightRatio: CGFloat = 0.4
-        static let maxHeightRatio: CGFloat = 0.7
+        static let maxHeightRatio: CGFloat = 0.8
 
         static let collapsedGap: CGFloat = 8
 
@@ -55,7 +55,8 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
         let sources: [StoragePlugin: any StorageSource] = [
             .asyncStorage: AsyncStorageSource(),
             .mmkv: MMKVSource(),
-            .reduxPersist: ReduxPersistSource()
+            .reduxPersist: ReduxPersistSource(),
+            .redux: ReduxSource(settings: settings)
         ]
         self.pluginViewModels = sources.mapValues { PluginStorageViewModel(source: $0, appSelection: appSelection) }
         super.init()
@@ -64,6 +65,7 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
             layoutViewModel: layoutViewModel,
             appSelection: appSelection,
             pluginViewModels: pluginViewModels,
+            statisticsViewModel: StatisticsViewModel(pluginViewModels: pluginViewModels),
             settings: settings
         ))
         hostingView.sizingOptions = []
@@ -102,6 +104,12 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
             .sink { [weak self] _ in self?.collapsedStateDidChange() }
             .store(in: &cancellables)
 
+        settings.didResetToDefaults
+            .sink { [weak self] in
+                self?.pluginViewModels.values.forEach { $0.resetTypeFilter() }
+            }
+            .store(in: &cancellables)
+
         applySettings()
         settings.objectWillChange
             .receive(on: DispatchQueue.main)
@@ -130,7 +138,6 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
             panel.orderFrontRegardless()
         }
     }
-
 
     private func positionDidChange() {
         guard !layoutViewModel.isDetached, let simulatorFrame else { return }
@@ -232,7 +239,6 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
         guard let simulatorFrame else { return 1 }
         return panel.frame.midX < simulatorFrame.midX ? -1 : 1
     }
-
 
     private func layout(nextTo simulatorFrame: CGRect) {
         guard !frameAnimator.isAnimating, !layoutViewModel.isDetached else { return }

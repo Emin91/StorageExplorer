@@ -72,7 +72,6 @@ final class AppSelectionViewModel: ObservableObject {
         }
     }
 
-
     private func persistentKey(of location: StorageLocation) -> String {
         "\(location.deviceUDID)|\(location.bundleID)|\(location.appName)"
     }

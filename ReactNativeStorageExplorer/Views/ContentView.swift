@@ -11,9 +11,11 @@ struct ContentView: View {
     @ObservedObject var layoutViewModel: PanelLayoutViewModel
     let appSelection: AppSelectionViewModel
     let pluginViewModels: [StoragePlugin: PluginStorageViewModel]
+    let statisticsViewModel: StatisticsViewModel
     @ObservedObject var settings: AppSettings
 
     @State private var openedPlugin: StoragePlugin?
+    @State private var showsStatistics = false
 
     private var enabledPlugins: [StoragePlugin] {
         StoragePlugin.allCases.filter(settings.isEnabled)
@@ -47,9 +49,28 @@ struct ContentView: View {
             .transition(.opacity)
         } else {
             VStack(spacing: 0) {
-                TargetAppBar(viewModel: appSelection)
+                TargetAppBar(viewModel: appSelection, showsStatistics: $showsStatistics)
                 Divider()
-                pluginSections
+                ZStack {
+                    if showsStatistics {
+                        StatisticsView(
+                            viewModel: statisticsViewModel,
+                            plugins: enabledPlugins,
+                            onBack: { showsStatistics = false },
+                            onSelect: { plugin in
+                                openedPlugin = enabledPlugins.count > 1 ? plugin : nil
+                                showsStatistics = false
+                            }
+                        )
+                        .transition(.move(edge: .trailing))
+                    } else {
+                        pluginSections
+                            .transition(.move(edge: .leading).combined(with: .opacity))
+                    }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+                .animation(.easeInOut(duration: 0.3), value: showsStatistics)
             }
             .transition(.opacity)
         }
@@ -119,12 +140,14 @@ struct ContentView: View {
 
 #Preview {
     let appSelection = AppSelectionViewModel(settings: AppSettings())
+    let pluginViewModels: [StoragePlugin: PluginStorageViewModel] = [
+        .asyncStorage: PluginStorageViewModel(source: AsyncStorageSource(), appSelection: appSelection)
+    ]
     ContentView(
         layoutViewModel: PanelLayoutViewModel(),
         appSelection: appSelection,
-        pluginViewModels: [
-            .asyncStorage: PluginStorageViewModel(source: AsyncStorageSource(), appSelection: appSelection)
-        ],
+        pluginViewModels: pluginViewModels,
+        statisticsViewModel: StatisticsViewModel(pluginViewModels: pluginViewModels),
         settings: AppSettings()
     )
     .frame(width: 440, height: 480)

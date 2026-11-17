@@ -20,6 +20,8 @@ final class PluginStorageViewModel: ObservableObject {
 
     @Published var searchText = ""
     @Published var searchScope: SearchScope = .all
+    @Published var typeFilter: Set<StorageValueType> = []
+    @Published var sort: StorageSort?
 
     let appSelection: AppSelectionViewModel
 
@@ -47,21 +49,42 @@ final class PluginStorageViewModel: ObservableObject {
             .store(in: &cancellables)
     }
 
-
     var searchQuery: String {
         searchText.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    var filteredItems: [StorageItem] {
-        let query = searchQuery
-        guard !query.isEmpty else { return items }
-
-        return items.filter { item in
-            (searchScope.includesKeys && item.key.matches(query))
-                || (searchScope.includesValues && item.value.matches(query))
-        }
+    var isFiltering: Bool {
+        !searchQuery.isEmpty || !typeFilter.isEmpty
     }
 
+    var filteredItems: [StorageItem] {
+        let query = searchQuery
+        let filtered = items.filter { item in
+            let matchesType = typeFilter.isEmpty || typeFilter.contains(item.type)
+            let matchesQuery = query.isEmpty
+                || (searchScope.includesKeys && item.key.matches(query))
+                || (searchScope.includesValues && item.value.matches(query))
+            return matchesType && matchesQuery
+        }
+        return sort?.sorted(filtered) ?? filtered
+    }
+
+    var availableTypes: [StorageValueType] {
+        let presentTypes = Set(items.map(\.type))
+        return StorageValueType.allCases.filter(presentTypes.contains)
+    }
+
+    func resetTypeFilter() {
+        typeFilter = []
+    }
+
+    func setFilter(_ isOn: Bool, for type: StorageValueType) {
+        if isOn {
+            typeFilter.insert(type)
+        } else {
+            typeFilter.remove(type)
+        }
+    }
 
     private var selectedLocation: StorageLocation? {
         appSelection.selectedLocation
@@ -112,7 +135,6 @@ final class PluginStorageViewModel: ObservableObject {
             Task { await self.reloadItems() }
         }
     }
-
 
     private func reloadItems() async {
         guard let location = selectedLocation, source.directoryURL(for: location) != nil else {

@@ -58,10 +58,17 @@ nonisolated enum StoragePlugin: String, CaseIterable, Identifiable, Sendable {
         }
     }
 
+    var guideURL: URL? {
+        switch self {
+        case .redux: URL(string: "https://github.com/Emin91/StorageExplorer/blob/main/docs/plugins/redux.md")
+        default: nil
+        }
+    }
+
     var isAvailable: Bool {
         switch self {
-        case .asyncStorage, .mmkv, .reduxPersist: true
-        case .redux, .zustand, .mobx, .realm, .encryptedStorage: false
+        case .asyncStorage, .mmkv, .reduxPersist, .redux: true
+        case .zustand, .mobx, .realm, .encryptedStorage: false
         }
     }
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-nonisolated enum StorageValueType: String, Sendable {
+nonisolated enum StorageValueType: String, CaseIterable, Sendable {
     case string
     case number
     case boolean

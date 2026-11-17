@@ -47,7 +47,6 @@ final class SimulatorWindowTracker: NSObject {
         Unmanaged.passUnretained(self).toOpaque()
     }
 
-
     func start() {
         if AXIsProcessTrusted() {
             beginTracking()
@@ -99,7 +98,6 @@ final class SimulatorWindowTracker: NSObject {
         updateTrackedFrame()
     }
 
-
     @objc private func applicationDidLaunch(_ notification: Notification) {
         guard let app = simulatorApp(from: notification) else { return }
         attach(to: app)
@@ -119,7 +117,6 @@ final class SimulatorWindowTracker: NSObject {
         let app = notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
         return app?.bundleIdentifier == Self.simulatorBundleID ? app : nil
     }
-
 
     private func attach(to app: NSRunningApplication) {
         detach()
@@ -188,7 +185,6 @@ final class SimulatorWindowTracker: NSObject {
         startLiveTracking()
     }
 
-
     private func startLiveTracking() {
         idleTicks = 0
         guard displayLink == nil else { return }
@@ -210,7 +206,6 @@ final class SimulatorWindowTracker: NSObject {
             stopLiveTracking()
         }
     }
-
 
     private func refresh() {
         guard isSimulatorInFocus,

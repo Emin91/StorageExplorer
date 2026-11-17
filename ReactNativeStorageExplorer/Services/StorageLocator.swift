@@ -19,7 +19,6 @@ nonisolated struct StorageLocator {
             .sorted { $0.modificationDate > $1.modificationDate }
     }
 
-
     private struct DeviceList: Decodable {
         let devices: [String: [DeviceEntry]]
     }
@@ -52,7 +51,6 @@ nonisolated struct StorageLocator {
         guard let platform = components.first, components.count > 1 else { return runtime }
         return "\(platform) \(components.dropFirst().joined(separator: "."))"
     }
-
 
     private func storageLocations(on device: Device) -> [StorageLocation] {
         let containersURL = URL(fileURLWithPath: device.dataPath).appending(path: "Containers")
@@ -137,7 +135,6 @@ nonisolated struct StorageLocator {
     private func modificationDate(of url: URL) -> Date? {
         try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate
     }
-
 
     private func bundleID(ofDataContainer containerURL: URL) -> String? {
         let metadataURL = containerURL.appending(path: ".com.apple.mobile_container_manager.metadata.plist")

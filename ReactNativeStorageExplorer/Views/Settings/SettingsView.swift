@@ -18,6 +18,26 @@ struct SettingsView: View {
         return screenHeight * Self.maxScreenHeightRatio
     }
 
+    private var metroPortField: some View {
+        LabeledContent {
+            TextField("Metro Port", value: metroPort, format: .number.grouping(.never))
+                .labelsHidden()
+                .multilineTextAlignment(.trailing)
+                .frame(width: 80)
+        } label: {
+            Text("Metro Port")
+            Text("Default: \(AppSettings.Defaults.metroPort)")
+        }
+        .padding(.leading, 28)
+    }
+
+    private var metroPort: Binding<Int> {
+        Binding(
+            get: { settings.metroPort },
+            set: { settings.metroPort = min(max($0, 1), 65_535) }
+        )
+    }
+
     @State private var launchesAtLogin = LaunchAtLogin.isEnabled
 
     var body: some View {
@@ -25,6 +45,7 @@ struct SettingsView: View {
             Section("General") {
                 Toggle("Launch at Login", isOn: $launchesAtLogin)
                     .tint(.orange)
+                    .controlSize(.small)
                     .onChange(of: launchesAtLogin) { _, isEnabled in
                         try? LaunchAtLogin.setEnabled(isEnabled)
                         launchesAtLogin = LaunchAtLogin.isEnabled
@@ -35,6 +56,7 @@ struct SettingsView: View {
                     Text("The menu bar icon is always available.")
                 }
                 .tint(.orange)
+                .controlSize(.small)
 
                 Picker(selection: $settings.appSelectionMode) {
                     ForEach(AppSelectionMode.allCases) { mode in
@@ -50,9 +72,49 @@ struct SettingsView: View {
                 ForEach(StoragePlugin.allCases) { plugin in
                     PluginToggle(plugin: plugin, isOn: Binding(
                         get: { settings.isEnabled(plugin) },
-                        set: { settings.setEnabled($0, for: plugin) }
+                        set: { isOn in
+                            withAnimation(.easeInOut(duration: 0.25)) {
+                                settings.setEnabled(isOn, for: plugin)
+                            }
+                        }
                     ))
+
+                    if plugin == .redux, settings.isEnabled(.redux) {
+                        metroPortField
+                            .transition(.opacity.combined(with: .move(edge: .top)))
+                    }
                 }
+            }
+
+            Section("Change Highlight") {
+                Toggle("Highlight changed values", isOn: $settings.highlightsChanges)
+                    .tint(.orange)
+                    .controlSize(.small)
+
+                LabeledContent("Color") {
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(settings.highlightColor.color)
+                            .frame(width: 12, height: 12)
+                        Picker("Color", selection: $settings.highlightColor) {
+                            ForEach(HighlightColor.allCases) { color in
+                                Text(color.title).tag(color)
+                            }
+                        }
+                        .labelsHidden()
+                        .fixedSize()
+                    }
+                }
+                .disabled(!settings.highlightsChanges)
+
+                LabeledSlider(
+                    title: "Duration",
+                    value: $settings.highlightDuration,
+                    range: 0.2...2,
+                    step: 0.1,
+                    format: { String(format: "%.1f s", $0) }
+                )
+                .disabled(!settings.highlightsChanges)
             }
 
             Section("Layout") {
@@ -135,6 +197,7 @@ private struct PluginToggle: View {
         }
         .toggleStyle(.switch)
         .tint(.orange)
+        .controlSize(.small)
         .disabled(!plugin.isAvailable)
     }
 }
@@ -158,6 +221,7 @@ private struct LabeledSlider: View {
             HStack {
                 Slider(value: snappedValue, in: range)
                     .tint(.orange)
+                    .controlSize(.small)
                 Text(format(value))
                     .monospacedDigit()
                     .foregroundStyle(.secondary)

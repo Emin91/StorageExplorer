@@ -12,6 +12,8 @@ struct StorageView: View {
     @ObservedObject var viewModel: PluginStorageViewModel
     @ObservedObject var appSelection: AppSelectionViewModel
 
+    @AppStorage(StorageColumn.LayoutKey.hiddenColumns) private var hiddenColumnsValue = ""
+
     private var selectedItem: StorageItem? {
         viewModel.items.first { $0.id == viewModel.selectedItemID }
     }
@@ -24,11 +26,17 @@ struct StorageView: View {
     @ViewBuilder
     private var content: some View {
         if let errorMessage = viewModel.errorMessage ?? appSelection.errorMessage {
-            ContentUnavailableView(
-                "Can't Read Storage",
-                systemImage: "exclamationmark.triangle",
-                description: Text(errorMessage)
-            )
+            ContentUnavailableView {
+                Label("Can't Read Storage", systemImage: "exclamationmark.triangle")
+            } description: {
+                Text(errorMessage)
+            } actions: {
+                if let guideURL = plugin.guideURL {
+                    Link(destination: guideURL) {
+                        Label("Open \(plugin.title) Setup Guide", systemImage: "book")
+                    }
+                }
+            }
         } else if appSelection.locations.isEmpty {
             ContentUnavailableView(
                 "No Apps Found",
@@ -54,6 +62,8 @@ struct StorageView: View {
                         totals
                         results
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .animation(.easeInOut(duration: 0.25), value: viewModel.sort)
+                            .animation(.easeInOut(duration: 0.25), value: viewModel.typeFilter)
                     }
                     .transition(.move(edge: .leading))
                 }
@@ -67,9 +77,45 @@ struct StorageView: View {
         HStack(spacing: 6) {
             SearchField(text: $viewModel.searchText, prompt: "Search keys and values")
             scopeMenu
+            columnsMenu
         }
         .padding(.horizontal, 12)
         .padding(.top, 6)
+    }
+
+    private var columnsMenu: some View {
+        Menu {
+            Section("Columns") {
+                ForEach(["Row Number", "Key"], id: \.self) { title in
+                    Toggle(title, isOn: .constant(true))
+                        .disabled(true)
+                }
+                ForEach(StorageColumn.allCases) { column in
+                    Toggle(column.title, isOn: columnVisibility(column))
+                }
+            }
+        } label: {
+            Image(systemName: "tablecells")
+        }
+        .menuStyle(.borderlessButton)
+        .menuIndicator(.hidden)
+        .fixedSize()
+        .help("Show or Hide Columns")
+    }
+
+    private func columnVisibility(_ column: StorageColumn) -> Binding<Bool> {
+        Binding(
+            get: { !StorageColumn.hiddenColumns(from: hiddenColumnsValue).contains(column) },
+            set: { isVisible in
+                var hiddenColumns = StorageColumn.hiddenColumns(from: hiddenColumnsValue)
+                if isVisible {
+                    hiddenColumns.remove(column)
+                } else {
+                    hiddenColumns.insert(column)
+                }
+                hiddenColumnsValue = StorageColumn.storedValue(for: hiddenColumns)
+            }
+        )
     }
 
     private var scopeMenu: some View {
@@ -80,8 +126,24 @@ struct StorageView: View {
                 }
             }
             .pickerStyle(.inline)
+
+            Section("Show Types") {
+                ForEach(viewModel.availableTypes, id: \.self) { type in
+                    Toggle(type.title, isOn: Binding(
+                        get: { viewModel.typeFilter.contains(type) },
+                        set: { viewModel.setFilter($0, for: type) }
+                    ))
+                }
+                if !viewModel.typeFilter.isEmpty {
+                    Button("Show All Types") {
+                        viewModel.typeFilter = []
+                    }
+                }
+            }
         } label: {
-            Image(systemName: "line.3.horizontal.decrease.circle")
+            Image(systemName: viewModel.typeFilter.isEmpty
+                ? "line.3.horizontal.decrease.circle"
+                : "line.3.horizontal.decrease.circle.fill")
         }
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
@@ -95,12 +157,21 @@ struct StorageView: View {
         let filteredItems = viewModel.filteredItems
 
         if filteredItems.isEmpty {
-            ContentUnavailableView.search(text: query)
+            if query.isEmpty {
+                ContentUnavailableView(
+                    "No Keys of Selected Types",
+                    systemImage: "line.3.horizontal.decrease.circle",
+                    description: Text("Change the type filter to see more keys.")
+                )
+            } else {
+                ContentUnavailableView.search(text: query)
+            }
         } else {
             StorageTable(
                 items: filteredItems,
                 keyHighlight: viewModel.searchScope.includesKeys ? query : "",
-                valueHighlight: viewModel.searchScope.includesValues ? query : ""
+                valueHighlight: viewModel.searchScope.includesValues ? query : "",
+                sort: $viewModel.sort
             ) { item in
                 viewModel.selectedItemID = item.id
             }
@@ -110,7 +181,7 @@ struct StorageView: View {
     private var totals: some View {
         let shownItems = viewModel.filteredItems
         let totalSize = shownItems.reduce(0) { $0 + $1.size }
-        let isFiltering = !viewModel.searchQuery.isEmpty
+        let isFiltering = viewModel.isFiltering
 
         return HStack(spacing: 6) {
             statBadge(

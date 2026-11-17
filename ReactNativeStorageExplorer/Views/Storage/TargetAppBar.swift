@@ -5,10 +5,12 @@
 //  Created by Emin Zeynalov on 31.03.26.
 //
 
+import AppKit
 import SwiftUI
 
 struct TargetAppBar: View {
     @ObservedObject var viewModel: AppSelectionViewModel
+    @Binding var showsStatistics: Bool
 
     var body: some View {
         HStack(spacing: 0) {
@@ -24,6 +26,18 @@ struct TargetAppBar: View {
 
             pinButton
             refreshButton
+
+            Divider()
+                .frame(height: 16)
+                .padding(.horizontal, 6)
+
+            openFolderButton
+
+            Divider()
+                .frame(height: 16)
+                .padding(.horizontal, 6)
+
+            statisticsButton
                 .padding(.trailing, 2)
         }
         .groupedControlBackground()
@@ -73,6 +87,34 @@ struct TargetAppBar: View {
     private func menuTitle(for location: StorageLocation) -> String {
         let title = "\(location.appName) — \(location.bundleID) (\(location.deviceName), \(location.osVersion))"
         return location.id == viewModel.activeLocationID ? "\(title) · Active" : title
+    }
+
+    private var statisticsButton: some View {
+        Button {
+            showsStatistics.toggle()
+        } label: {
+            Image(systemName: "chart.bar.xaxis")
+                .fontWeight(.light)
+                .foregroundStyle(showsStatistics ? Color.orange : Color.primary)
+                .animation(.easeInOut(duration: 0.25), value: showsStatistics)
+                .frame(width: 20, height: 20)
+        }
+        .buttonStyle(.borderless)
+        .help(showsStatistics ? "Hide Statistics" : "Show Statistics")
+    }
+
+    private var openFolderButton: some View {
+        Button {
+            if let folderURL = viewModel.selectedLocation?.dataFolderURL {
+                NSWorkspace.shared.open(folderURL)
+            }
+        } label: {
+            Image(systemName: "folder")
+                .frame(width: 20, height: 20)
+        }
+        .buttonStyle(.borderless)
+        .disabled(viewModel.selectedLocation == nil)
+        .help("Show App Data in Finder")
     }
 
     private var pinButton: some View {

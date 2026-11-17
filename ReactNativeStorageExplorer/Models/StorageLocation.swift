@@ -22,6 +22,13 @@ nonisolated struct StorageLocation: Identifiable, Hashable, Sendable {
     let mmkvURL: URL?
     let modificationDate: Date
 
+    var dataFolderURL: URL {
+        if isExpoGoProject, let asyncStorageURL {
+            return asyncStorageURL.deletingLastPathComponent()
+        }
+        return containerURL
+    }
+
     var id: URL { asyncStorageURL ?? containerURL }
 
     var versionDescription: String? {

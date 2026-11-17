@@ -46,24 +46,34 @@ That's it. The script downloads the latest release, installs **Storage Explorer*
 
 ### 🔌 Plugins
 
-| Plugin            | What you see                                              |
-| ----------------- | --------------------------------------------------------- |
-| **AsyncStorage**  | All keys of regular builds and Expo Go projects           |
-| **MMKV**          | Every `react-native-mmkv` instance, labeled with its name |
-| **Redux Persist** | `persist:*` entries unpacked into state slices            |
+| Plugin            | What you see                                              | Setup                                         |
+| ----------------- | --------------------------------------------------------- | --------------------------------------------- |
+| **AsyncStorage**  | All keys of regular builds and Expo Go projects           | None                                          |
+| **MMKV**          | Every `react-native-mmkv` instance, labeled with its name | None                                          |
+| **Redux Persist** | `persist:*` entries unpacked into state slices            | None                                          |
+| **Redux**         | Live store state, updated on every change                 | [One line in your app](docs/plugins/redux.md) |
 
-Coming soon: Redux, Zustand, MobX, Realm, Encrypted Storage.
+Coming soon: Zustand, MobX, Realm, Encrypted Storage.
 
 ### ⚡ Real-time data
 
-- Key, value, type, size and last-modified columns.
+- Key, value, type, size and last-modified columns. Resize them, hide the ones you don't need.
 - Updates the moment your app writes data.
+- Changed values flash briefly: in the key list, in the JSON tree and on the plugin cards.
 - Search across keys and values with highlighted matches.
+- Sort by any column and filter by value type.
 - Key count and total storage size at a glance.
+
+### 📊 Statistics
+
+- A bar chart comparing all enabled plugins: storage size, key count and total.
+- Updates live as your app writes data.
+- Click a bar to jump straight to that plugin's keys.
 
 ### 🔍 Value inspector
 
 - Collapsible JSON tree with syntax highlighting.
+- Search inside a value, step through the matches one by one.
 - JSON nested in strings is decoded automatically.
 - Raw mode with pretty-printed JSON.
 - One-click copy for keys and values.
@@ -72,12 +82,17 @@ Coming soon: Redux, Zustand, MobX, Realm, Encrypted Storage.
 
 - Every app with storage data on all booted simulators: icon, name, version, bundle ID, device and iOS version.
 - Follows the app you're running. Pin it to keep the current selection.
+- Open the app's data folder in Finder with one click.
 
 ### ⚙️ Settings
 
 - Turn plugins on and off.
+- Metro port for the Redux plugin.
+- Change highlight: on/off, color and duration.
+- Panel spacing, background material and opacity.
 - Launch at login.
 - Menu bar only mode, without a Dock icon.
+- Reset everything to defaults, including column widths.
 
 ## Requirements
 
@@ -87,28 +102,30 @@ Coming soon: Redux, Zustand, MobX, Realm, Encrypted Storage.
 
 ## How it works
 
-Storage Explorer reads data directly from your app's files in the Simulator (`~/Library/Developer/CoreSimulator/Devices/…`), so nothing needs to be installed in your React Native project.
+Storage plugins read data directly from your app's files in the Simulator (`~/Library/Developer/CoreSimulator/Devices/…`), so nothing needs to be installed in your React Native project. Redux lives in memory, so it's read from the running app instead.
 
 | Storage       | How it's read                                                                                 |
 | ------------- | --------------------------------------------------------------------------------------------- |
 | AsyncStorage  | `manifest.json` plus separate files for large values; changes tracked with file system events |
 | MMKV          | The binary instance format; re-read every second                                              |
 | Redux Persist | `persist:*` entries from AsyncStorage and MMKV, with the double JSON encoding unpacked        |
+| Redux         | Live store state through Metro and the Hermes debugger ([details](docs/plugins/redux.md))     |
 
 ## Limitations
 
 - Read-only: data can't be edited yet.
 - iOS Simulator only: physical devices and Android are not supported.
 - Encrypted MMKV instances can't be read.
-- Redux Persist shows the persisted state, not the current in-memory state.
+- Redux Persist shows the persisted state; use the Redux plugin for the live state.
+- Redux needs a debug build with Metro running.
 - Last-modified times are tracked only while Storage Explorer is running.
 
 ## Roadmap
 
 - [ ] Editing, adding and deleting keys
-- [ ] Redux, Zustand, MobX, Realm, Encrypted Storage and SQLite plugins
+- [ ] Zustand, MobX, Realm, Encrypted Storage and SQLite plugins
+- [ ] Dispatching Redux actions and an action log
 - [ ] JSON export and import
-- [ ] Sorting by column
 - [ ] Keyboard shortcuts
 
 ## Project structure
@@ -116,9 +133,9 @@ Storage Explorer reads data directly from your app's files in the Simulator (`~/
 ```
 App/          entry point, AppDelegate, menu bar icon
 Windows/      floating panel and its windows
-Services/     app discovery, AsyncStorage/MMKV/Redux Persist readers, Simulator tracking
-ViewModels/   app selection, plugin data, panel state
-Views/        SwiftUI interface: table, value inspector, settings
+Services/     app discovery, AsyncStorage/MMKV/Redux Persist readers, Redux bridge, Simulator tracking
+ViewModels/   app selection, plugin data, statistics, panel state
+Views/        SwiftUI interface: table, value inspector, statistics, settings
 Models/       data models
 Extensions/   helper extensions
 scripts/      DMG build

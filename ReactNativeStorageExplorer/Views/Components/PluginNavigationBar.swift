@@ -41,20 +41,7 @@ struct PluginNavigationBar: View {
     }
 
     private func navigationButton(_ title: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                Image(systemName: "chevron.left")
-                    .fontWeight(.semibold)
-                Text(title)
-            }
-            .font(.callout.weight(.medium))
-            .foregroundStyle(.primary)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 4)
-            .background(Color.primary.opacity(0.08), in: Capsule())
-            .contentShape(Capsule())
-        }
-        .buttonStyle(.plain)
-        .transition(.opacity)
+        BackButton(title, action: action)
+            .transition(.opacity)
     }
 }
