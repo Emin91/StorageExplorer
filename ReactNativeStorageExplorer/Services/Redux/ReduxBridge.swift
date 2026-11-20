@@ -8,55 +8,37 @@
 import Foundation
 
 actor ReduxBridge {
-    private var client: CDPClient?
-    private var connectedAppKey: String?
+    private let connection: MetroDebuggerConnection
+    private var cachedClient: CDPClient?
     private var lastVersion: String?
     private var cachedItems: [StorageItem] = []
 
-    func readItems(bundleID: String, deviceName: String, metroPort: Int) async throws -> [StorageItem] {
-        do {
-            let client = try await connectedClient(bundleID: bundleID, deviceName: deviceName, metroPort: metroPort)
-            let version = try await installedVersion(client)
+    init(connection: MetroDebuggerConnection) {
+        self.connection = connection
+    }
 
+    func readItems(bundleID: String, deviceName: String, metroPort: Int) async throws -> [StorageItem] {
+        let client = try await connection.client(bundleID: bundleID, deviceName: deviceName, metroPort: metroPort)
+        do {
+            if client !== cachedClient {
+                cachedClient = client
+                lastVersion = nil
+                cachedItems = []
+            }
+
+            let version = try await installedVersion(client)
             if version != lastVersion {
                 cachedItems = try await readState(client)
                 lastVersion = version
             }
             return cachedItems
         } catch {
-            await disconnect()
+            if case MetroBridgeError.reduxStoreNotFound = error {
+                throw error
+            }
+            await connection.disconnect(client)
             throw error
         }
-    }
-
-    private func connectedClient(bundleID: String, deviceName: String, metroPort: Int) async throws -> CDPClient {
-        let appKey = "\(bundleID)|\(deviceName)|\(metroPort)"
-        if let client, connectedAppKey == appKey {
-            let isClosed = await client.isClosed
-            if !isClosed {
-                return client
-            }
-        }
-
-        await disconnect()
-        let target = try await MetroTargetProvider(port: metroPort).target(bundleID: bundleID, deviceName: deviceName)
-        guard let url = URL(string: target.webSocketDebuggerUrl) else {
-            throw ReduxBridgeError.appNotFound(bundleID: bundleID)
-        }
-
-        let newClient = CDPClient(url: url)
-        await newClient.connect()
-        client = newClient
-        connectedAppKey = appKey
-        return newClient
-    }
-
-    private func disconnect() async {
-        await client?.close()
-        client = nil
-        connectedAppKey = nil
-        lastVersion = nil
-        cachedItems = []
     }
 
     private func installedVersion(_ client: CDPClient) async throws -> String {
@@ -66,7 +48,7 @@ actor ReduxBridge {
 
         guard try await client.evaluate(ReduxScripts.install) == "ok",
               let version = try await client.evaluate(ReduxScripts.version) else {
-            throw ReduxBridgeError.storeNotFound
+            throw MetroBridgeError.reduxStoreNotFound
         }
         return version
     }
@@ -79,7 +61,7 @@ actor ReduxBridge {
     private func readState(_ client: CDPClient) async throws -> [StorageItem] {
         guard let json = try await client.evaluate(ReduxScripts.state),
               let slices = try? JSONDecoder().decode([[String]].self, from: Data(json.utf8)) else {
-            throw ReduxBridgeError.storeNotFound
+            throw MetroBridgeError.reduxStoreNotFound
         }
 
         let items = slices.compactMap { slice -> StorageItem? in

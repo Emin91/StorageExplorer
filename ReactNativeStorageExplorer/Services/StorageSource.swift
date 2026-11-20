@@ -49,11 +49,36 @@ struct MMKVSource: StorageSource {
 }
 
 final class ReduxSource: StorageSource {
-    private let bridge = ReduxBridge()
+    private let bridge: ReduxBridge
     private let settings: AppSettings
 
-    init(settings: AppSettings) {
+    init(settings: AppSettings, connection: MetroDebuggerConnection) {
         self.settings = settings
+        bridge = ReduxBridge(connection: connection)
+    }
+
+    var changeDetection: StorageChangeDetection { .polling }
+
+    func directoryURL(for location: StorageLocation) -> URL? {
+        location.containerURL
+    }
+
+    func readItems(for location: StorageLocation) async throws -> [StorageItem] {
+        try await bridge.readItems(
+            bundleID: location.bundleID,
+            deviceName: location.deviceName,
+            metroPort: settings.metroPort
+        )
+    }
+}
+
+final class ZustandSource: StorageSource {
+    private let bridge: ZustandBridge
+    private let settings: AppSettings
+
+    init(settings: AppSettings, connection: MetroDebuggerConnection) {
+        self.settings = settings
+        bridge = ZustandBridge(connection: connection)
     }
 
     var changeDetection: StorageChangeDetection { .polling }
