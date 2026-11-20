@@ -47,7 +47,7 @@ nonisolated struct MetroTargetProvider {
         } catch is DecodingError {
             return []
         } catch {
-            throw MetroBridgeError.metroNotRunning(port: port)
+            throw ReduxBridgeError.metroNotRunning(port: port)
         }
     }
 
@@ -60,7 +60,7 @@ nonisolated struct MetroTargetProvider {
         let deviceCandidates = onDevice.isEmpty ? candidates : onDevice
 
         guard let target = deviceCandidates.last(where: \.isMainRuntime) ?? deviceCandidates.first else {
-            throw MetroBridgeError.appNotFound(bundleID: bundleID)
+            throw ReduxBridgeError.appNotFound(bundleID: bundleID)
         }
         return target
     }

@@ -41,7 +41,7 @@ Open **Settings → Plugins** in Storage Explorer and enable **Redux**.
 ## How it works
 
 1. Storage Explorer asks Metro which apps are connected (`http://localhost:8081/json/list`) and picks the app selected in the panel.
-2. It connects to the app's Hermes runtime over the Chrome DevTools Protocol, the same channel React Native DevTools uses. The Zustand plugin shares this connection.
+2. It connects to the app's Hermes runtime over the Chrome DevTools Protocol, the same channel React Native DevTools uses.
 3. It subscribes to the store and counts changes. The state is read again only when the store actually changed, so large stores don't slow the app down.
 4. After a JS reload (⌘R, Fast Refresh) the connection is restored automatically.
 
@@ -52,16 +52,16 @@ Nothing is installed in your app, and nothing is sent anywhere outside your Mac.
 | Message | What to do |
 | --- | --- |
 | *Metro isn't running on localhost:8081* | Start Metro: `npx react-native start` or `npx expo start`. |
-| *… isn't connected to Metro* | Make sure it's a debug build using Hermes (Expo Go or a development build) and that it's running in Simulator. |
+| *… isn't connected to Metro* | Make sure it's a debug build using Hermes and that it's running in Simulator. |
 | *No Redux store found* | Check that the setup line above runs before the app renders, then reload JS (⌘R). |
 | *The app didn't respond* | The app may be paused at a breakpoint. Resume it. |
 | *The connection to the app was closed* / data stops updating | Another debugger may be attached. See the conflict note below. |
 
-> **Debuggers.** Storage Explorer uses the same debugging channel as React Native DevTools, the Chrome debugger and Redux DevTools setups that connect through it. Recent React Native versions (and Expo Go) let several debuggers stay connected at once. On older versions only one may stay connected, so opening one can disconnect the other: if the Redux section stops updating, close the other debugger, or turn the Redux plugin off while you use it.
+> **Possible conflict with debuggers.** Storage Explorer uses the same debugging channel as React Native DevTools, the Chrome debugger and Redux DevTools setups that connect through it. Depending on the React Native version, only one of them may stay connected at a time, so opening one can disconnect the other. If the Redux section stops updating, close the other debugger, or turn the Redux plugin off while you use it.
 
 ## Limitations
 
 - Read-only for now: dispatching actions and an action log are planned.
-- On older React Native versions, may conflict with React Native DevTools, the Chrome debugger or Redux DevTools attached through it.
-- Metro is expected on port `8081`; a different port can be set in **Settings → Plugins → Metro Port**.
+- May conflict with React Native DevTools, the Chrome debugger or Redux DevTools attached through it.
+- Metro is expected on port `8081`; a different port can be set in **Settings → Redux → Metro Port**.
 - The app appears in the app picker only if it also has AsyncStorage or MMKV data.
