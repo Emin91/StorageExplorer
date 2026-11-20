@@ -3,23 +3,6 @@
 All notable changes to Storage Explorer are listed here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
-
-### Added
-
-- **Zustand plugin**: live state of the stores registered in `global.__STORAGE_EXPLORER_ZUSTAND__`, without actions. See the [setup guide](docs/plugins/zustand.md).
-
-### Changed
-
-- Redux and Zustand share one debugger connection to the app.
-- The Metro Port setting is shown under the first enabled Redux or Zustand plugin.
-
-### Fixed
-
-- Redux and Zustand connect to apps on newer Metro (Expo SDK 52+, React Native 0.76+), which rejected the connection.
-- No endless reconnect loop when Redux and Zustand read at the same time.
-- A missing Redux store no longer drops the debugger connection on every read.
-
 ## [1.1.0] - 2026-11-17
 
 ### Added
@@ -58,6 +41,5 @@ First release.
 - Settings: plugins, launch at login, Dock icon, panel spacing, background and opacity.
 - Menu bar icon.
 
-[Unreleased]: https://github.com/Emin91/StorageExplorer/compare/v1.1.0...HEAD
 [1.1.0]: https://github.com/Emin91/StorageExplorer/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Emin91/StorageExplorer/releases/tag/v1.0.0

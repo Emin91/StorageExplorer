@@ -52,13 +52,11 @@ final class FloatingPanelController: NSObject, NSWindowDelegate {
 
         let appSelection = AppSelectionViewModel(settings: settings)
         self.appSelection = appSelection
-        let metroConnection = MetroDebuggerConnection()
         let sources: [StoragePlugin: any StorageSource] = [
             .asyncStorage: AsyncStorageSource(),
             .mmkv: MMKVSource(),
             .reduxPersist: ReduxPersistSource(),
-            .redux: ReduxSource(settings: settings, connection: metroConnection),
-            .zustand: ZustandSource(settings: settings, connection: metroConnection)
+            .redux: ReduxSource(settings: settings)
         ]
         self.pluginViewModels = sources.mapValues { PluginStorageViewModel(source: $0, appSelection: appSelection) }
         super.init()

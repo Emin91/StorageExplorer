@@ -5,7 +5,7 @@
 # Storage Explorer
 
 **Inspect React Native app storage in real time, right next to iOS Simulator.**<br>
-No packages to install. Most plugins work with zero changes to your app code.
+No packages to install. No changes to your app code.
 
 [![Latest release](https://img.shields.io/github/v/release/Emin91/StorageExplorer?color=FF9500&label=release)](https://github.com/Emin91/StorageExplorer/releases/latest)
 ![macOS 15+](https://img.shields.io/badge/macOS-15%2B-000000?logo=apple&logoColor=white)
@@ -20,7 +20,7 @@ No packages to install. Most plugins work with zero changes to your app code.
   <img src="docs/screenshot.png" width="900" alt="Storage Explorer next to iOS Simulator">
 </p>
 
-https://github.com/user-attachments/assets/0350dc5f-e0d0-4c40-b0b9-c19216e7fd3e
+https://github.com/user-attachments/assets/f18fe01e-0353-4caf-b9aa-1643b4d0cf97
 
 ## Installation
 
@@ -46,15 +46,14 @@ That's it. The script downloads the latest release, installs **Storage Explorer*
 
 ### 🔌 Plugins
 
-| Plugin            | What you see                                              | Setup                                      |
-| ----------------- | --------------------------------------------------------- | ------------------------------------------ |
-| **AsyncStorage**  | All keys of regular builds and Expo Go projects           | None                                       |
-| **MMKV**          | Every `react-native-mmkv` instance, labeled with its name | None                                       |
-| **Redux Persist** | `persist:*` entries unpacked into state slices            | None                                       |
+| Plugin            | What you see                                              | Setup                                         |
+| ----------------- | --------------------------------------------------------- | --------------------------------------------- |
+| **AsyncStorage**  | All keys of regular builds and Expo Go projects           | None                                          |
+| **MMKV**          | Every `react-native-mmkv` instance, labeled with its name | None                                          |
+| **Redux Persist** | `persist:*` entries unpacked into state slices            | None                                          |
 | **Redux**         | Live store state, updated on every change                 | [One line in your app](docs/plugins/redux.md) |
-| **Zustand**       | Live state of every registered store, without actions     | [A few lines in your app](docs/plugins/zustand.md) |
 
-Coming soon: MobX, Realm, Encrypted Storage.
+Coming soon: Zustand, MobX, Realm, Encrypted Storage.
 
 ### ⚡ Real-time data
 
@@ -88,7 +87,7 @@ Coming soon: MobX, Realm, Encrypted Storage.
 ### ⚙️ Settings
 
 - Turn plugins on and off.
-- Metro port for the Redux and Zustand plugins.
+- Metro port for the Redux plugin.
 - Change highlight: on/off, color and duration.
 - Panel spacing, background material and opacity.
 - Launch at login.
@@ -103,7 +102,7 @@ Coming soon: MobX, Realm, Encrypted Storage.
 
 ## How it works
 
-Storage plugins read data directly from your app's files in the Simulator (`~/Library/Developer/CoreSimulator/Devices/…`), so nothing needs to be installed in your React Native project. Redux and Zustand live in memory, so they're read from the running app instead.
+Storage plugins read data directly from your app's files in the Simulator (`~/Library/Developer/CoreSimulator/Devices/…`), so nothing needs to be installed in your React Native project. Redux lives in memory, so it's read from the running app instead.
 
 | Storage       | How it's read                                                                                 |
 | ------------- | --------------------------------------------------------------------------------------------- |
@@ -111,7 +110,6 @@ Storage plugins read data directly from your app's files in the Simulator (`~/Li
 | MMKV          | The binary instance format; re-read every second                                              |
 | Redux Persist | `persist:*` entries from AsyncStorage and MMKV, with the double JSON encoding unpacked        |
 | Redux         | Live store state through Metro and the Hermes debugger ([details](docs/plugins/redux.md))     |
-| Zustand       | Live state of registered stores, over the same connection as Redux ([details](docs/plugins/zustand.md)) |
 
 ## Limitations
 
@@ -119,13 +117,13 @@ Storage plugins read data directly from your app's files in the Simulator (`~/Li
 - iOS Simulator only: physical devices and Android are not supported.
 - Encrypted MMKV instances can't be read.
 - Redux Persist shows the persisted state; use the Redux plugin for the live state.
-- Redux and Zustand need a debug build with Metro running.
+- Redux needs a debug build with Metro running.
 - Last-modified times are tracked only while Storage Explorer is running.
 
 ## Roadmap
 
 - [ ] Editing, adding and deleting keys
-- [ ] MobX, Realm, Encrypted Storage and SQLite plugins
+- [ ] Zustand, MobX, Realm, Encrypted Storage and SQLite plugins
 - [ ] Dispatching Redux actions and an action log
 - [ ] JSON export and import
 - [ ] Keyboard shortcuts
@@ -135,7 +133,7 @@ Storage plugins read data directly from your app's files in the Simulator (`~/Li
 ```
 App/          entry point, AppDelegate, menu bar icon
 Windows/      floating panel and its windows
-Services/     app discovery, AsyncStorage/MMKV/Redux Persist readers, Metro debugger, Redux and Zustand bridges, Simulator tracking
+Services/     app discovery, AsyncStorage/MMKV/Redux Persist readers, Redux bridge, Simulator tracking
 ViewModels/   app selection, plugin data, statistics, panel state
 Views/        SwiftUI interface: table, value inspector, statistics, settings
 Models/       data models
