@@ -18,6 +18,10 @@ struct SettingsView: View {
         return screenHeight * Self.maxScreenHeightRatio
     }
 
+    private var firstEnabledMetroPlugin: StoragePlugin? {
+        StoragePlugin.allCases.first { $0.usesMetro && settings.isEnabled($0) }
+    }
+
     private var metroPortField: some View {
         LabeledContent {
             TextField("Metro Port", value: metroPort, format: .number.grouping(.never))
@@ -79,7 +83,7 @@ struct SettingsView: View {
                         }
                     ))
 
-                    if plugin == .redux, settings.isEnabled(.redux) {
+                    if plugin == firstEnabledMetroPlugin {
                         metroPortField
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
